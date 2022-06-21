@@ -164,4 +164,11 @@ async function create(appId) {
     }
 }
 
-module.exports = { create, findAll, findOneByAppId };
+function deleteAll() {
+    App.destroy({
+        where: {},
+        truncate: true
+    })
+}
+
+module.exports = { create, findAll, findOneByAppId, deleteAll };
