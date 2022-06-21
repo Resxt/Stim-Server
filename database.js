@@ -164,6 +164,42 @@ async function create(appId) {
     }
 }
 
+async function update(appId) {
+    console.log('-');
+
+    const app = await findOneByAppId(appId);
+
+    const response = await axios.get('https://store.steampowered.com/api/appdetails?appids=' + appId);
+    const receivedData = response.data[appId].data;
+
+    let developers = utils.arrayToString(receivedData.developers, ',');
+    let publishers = utils.arrayToString(receivedData.publishers, ',');
+
+    app.name = receivedData.name;
+    app.appId = receivedData.steam_appid;
+    app.requiredAge = receivedData.required_age;
+    app.descriptionLong = stripHtml(receivedData.detailed_description).result;
+    app.descriptionShort = stripHtml(receivedData.short_description).result;
+    app.supportedLanguages = stripHtml(receivedData.supported_languages).result;
+    app.headerImageUrl = receivedData.header_image;
+    app.website = receivedData.website;
+    app.pcRequirementsMinimum = stripHtml(receivedData.pc_requirements.minimum).result;
+    app.pcRequirementsRecommended = stripHtml(receivedData.pc_requirements.recommended).result;
+    app.legalNotice = stripHtml(receivedData.legal_notice).result;
+    app.developers = developers;
+    app.publishers = publishers;
+    app.price = receivedData.price_overview.final_formatted;
+    app.positiveRecommendations = receivedData.recommendations.total;
+    app.releaseDate = receivedData.release_date.date;
+    app.supportUrl = receivedData.support_info.url;
+    app.supportEmail = receivedData.support_info.email;
+    app.backgroundImageUrl = receivedData.background;
+
+    await app.save();
+
+    return app;
+}
+
 function deleteAll() {
     App.destroy({
         where: {},
@@ -171,4 +207,4 @@ function deleteAll() {
     })
 }
 
-module.exports = { create, findAll, findOneByAppId, deleteAll };
+module.exports = { create, findAll, findOneByAppId, deleteAll, update };
